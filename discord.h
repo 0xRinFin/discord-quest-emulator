@@ -1,0 +1,10 @@
+//
+// Created by Rin on 5/3/2026.
+//
+
+#ifndef DISCORDQUESTSPOOFER_DISCORD_H
+#define DISCORDQUESTSPOOFER_DISCORD_H
+
+void LaunchDiscord();
+
+#endif // DISCORDQUESTSPOOFER_DISCORD_H
