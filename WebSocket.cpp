@@ -18,10 +18,10 @@ void WebSocket::setOnOpen(const onOpen_t & callback) { m_onOpen = callback; }
 void WebSocket::connect() {
 	std::cout << "connecting" << std::endl;
 	m_webSocket.setUrl(m_url);
-	m_webSocket.setExtraHeaders({
-		{"Host", "localhost"},
-		{"Origin", "http://localhost"}
-	});
+	// m_webSocket.setExtraHeaders({
+	// 	{"Host", "localhost"},
+	// 	{"Origin", "http://localhost"}
+	// });
 
 	m_webSocket.setOnMessageCallback([this](const std::unique_ptr<ix::WebSocketMessage> & web_socket_message) {
 		std::cout << static_cast<int>(web_socket_message->type) << std::endl;

@@ -7,7 +7,7 @@
 #include "WebSocket.h"
 #include "nlohmann/json.hpp"
 
-typedef nlohmann::json quest;
+typedef nlohmann::basic_json<> quest;
 typedef std::vector<quest> questList;
 
 class Quests {
@@ -15,7 +15,8 @@ public:
 	Quests(WebSocket& ws);
 
 	void updateQuests() const;
-	void getQuest();
+	quest getQuest();
+	void doQuest();
 
 private:
 	WebSocket& m_ws;

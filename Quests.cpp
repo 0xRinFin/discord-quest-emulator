@@ -5,6 +5,8 @@
 #include "Quests.h"
 #include <iostream>
 
+#include "Window.h"
+
 Quests::Quests(WebSocket &ws) : m_ws(ws) {
 	ws.setOnMessage([&](const std::string& msg) {
 		auto json = nlohmann::json::parse(msg);
@@ -12,11 +14,41 @@ Quests::Quests(WebSocket &ws) : m_ws(ws) {
 			std::string quest_info_str = json["result"]["result"]["value"];
 			auto quest_info = nlohmann::json::parse(quest_info_str);
 
-			std::cout << "Result: " << quest_info["id"] << "\n";
+			m_quests.push_back(quest_info);
+			doQuest();
 		}
 	});
 
 	ws.setOnOpen([&](){Quests::updateQuests();});
+}
+
+quest Quests::getQuest() {
+	std::cout << "ABOUT TO SEGLFAULT" << std::endl;
+	std::cout << m_quests[m_quests.size()-1] << std::endl;
+	return m_quests[m_quests.size()-1];
+}
+
+void Quests::doQuest() {
+	if (m_quests.size() == 0) {
+		std::cerr << "Quest list empty." << std::endl;
+		return;
+	}
+
+	const quest quest_info = getQuest();
+	auto executable_info = quest_info["executables"][0];
+	std::string game_name = static_cast<std::string>(executable_info["name"]);
+
+	char exePath[MAX_PATH];
+	GetModuleFileNameA(nullptr, exePath, MAX_PATH);
+
+	char workerPath[MAX_PATH];
+	strcpy(workerPath, exePath);
+
+	char* lastSlash = strrchr(workerPath, '\\');
+	if (lastSlash) strcpy(lastSlash + 1, game_name.c_str());
+
+	CopyFileA(exePath, workerPath, FALSE);
+	ShellExecuteA(nullptr, "open", workerPath, "--worker", nullptr, SW_SHOW);
 }
 
 // thanks amia <3 (stole your code)

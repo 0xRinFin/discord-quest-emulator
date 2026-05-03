@@ -55,25 +55,50 @@ std::string GetWebSocketUrl() {
 	return "";
 }
 
-
-int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow) {
+void setupWindow(HINSTANCE & hInst) {
 	Window wnd{hInst};
-	MSG msg{};
+}
 
+void mainInstance(HINSTANCE &hInst) {
 	LaunchDiscord();
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 
 	// setup websocket
 	std::string websocketUrl = GetWebSocketUrl();
 	std::cout << websocketUrl << std::endl;
+
 	WebSocket webSocket{websocketUrl};
 	Quests quests{webSocket};
 
 	webSocket.connect();
+}
 
+
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR lpCmdLine, int nCmdShow) {
+	setupWindow(hInst);
+
+	WebSocket* webSocket;
+	Quests* quests;
+
+	if (strcmp(lpCmdLine, "--worker") != 0) {
+		LaunchDiscord();
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+
+		std::string websocketUrl = GetWebSocketUrl();
+		std::cout << websocketUrl << std::endl;
+
+		webSocket = new WebSocket{websocketUrl};
+		quests = new Quests{*webSocket};
+
+		webSocket->connect();
+	}
+
+	MSG msg{};
 	while (GetMessage(&msg, nullptr, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
+	WSACleanup();
 	return static_cast<int>(msg.wParam);
 }
