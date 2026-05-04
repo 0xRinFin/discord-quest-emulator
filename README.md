@@ -7,3 +7,6 @@ Instructions:
 - Open the .exe (if it doesn't work, open the .exe again, it opens discord with the 9992 port)
 - Wait for it to be completed
 - Reopen .exe for next quest ( i really gotta fix this )
+
+ToDo:
+ make it better pls
