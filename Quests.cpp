@@ -32,6 +32,7 @@ std::tuple<std::string, std::string> getExeFile(const std::string& exePath) {
 
 Quests::Quests(WebSocket &ws) : m_ws(ws) {
 	ws.setOnMessage([&](const std::string& msg) {
+		std::cout << msg << std::endl;
 		auto json = nlohmann::json::parse(msg);
 		if (json.contains("id") && json["id"] == 1) {
 			std::string quest_info_str = json["result"]["result"]["value"];
@@ -83,6 +84,7 @@ void Quests::doQuest() {
 void Quests::updateQuests() const {
 	std::string js = R"(
     (async () => {
+		const supportedTasks = ["PLAY_ON_DESKTOP"]
         let wpRequire = webpackChunkdiscord_app.push([[Symbol()], {}, r => r]);
         webpackChunkdiscord_app.pop();
 
@@ -96,17 +98,28 @@ void Quests::updateQuests() const {
                          !x.userStatus?.completedAt &&
                          new Date(x.config.expiresAt).getTime() > Date.now());
 
-        const quest = quests.pop();
-		const taskConfig = quest.config.taskConfig ?? quest.config.taskConfigV2
-		if(taskName === "WATCH_VIDEO" || taskName === "WATCH_VIDEO_ON_MOBILE") {
-			quest = quests.pop()
+		let getQuest = async () => {
+			const quest = quests.pop();
+			const taskConfig = quest.config.taskConfig ?? quest.config.taskConfigV2
+			const taskName = supportedTasks.find(x => taskConfig.tasks[x] != null)
+			if(taskName === "WATCH_VIDEO" || taskName === "WATCH_VIDEO_ON_MOBILE") {
+				quest = quests.pop()
+			}
+
+	        const res = await api.get({
+	            url: `/applications/public?application_ids=${quest.config.application.id}`
+			});
+
+			const body = res.body[0];
+			if (body && body.id === "545364944258990091") {
+				return getQuest();
+			}
+
+			return body;
 		}
 
-        const res = await api.get({
-            url: `/applications/public?application_ids=${quest.config.application.id}`
-        });
-
-        return JSON.stringify(res.body[0]);
+		let body = await getQuest();
+        return JSON.stringify(body);
     })()
 )";
 
